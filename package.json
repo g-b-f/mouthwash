@@ -5,15 +5,17 @@
   "license": "GPL-3.0-or-later",
   "author": "",
   "type": "module",
-  "types": "index.d.ts",
+  "main": "src/index.ts",
+  "exports": "./src/index.ts",
+  "bin": "bin/cli.ts",
   "files": [
-    "index.js",
-    "index.d.ts",
-    "words.json",
+    "src/index.ts",
+    "bin/cli.ts",
     "README.md"
   ],
   "scripts": {
-    "test": "node test.js"
+    "test": "node test.ts",
+    "cli": "node bin/cli.ts"
   },
   "keywords": [
     "profanity",
@@ -25,6 +27,10 @@
     "content-filter"
   ],
   "dependencies": {
-    "better-profane-words": "^1.0.7"
+    "better-profane-words": "^1.0.7",
+    "p-limit": "^7.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1"
   }
 }
