@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path"
 import pLimit from 'p-limit';
+import { isBinaryFileSync } from 'isbinaryfile';
 
 type ProfanityFinding = {
     line: string
@@ -20,13 +21,15 @@ export type ReadOptions = {
     ignore_files: string[]
     ignore_dirs: string[]
     concurrent_threads: number
+    check_binary_files: boolean
 }
 
 export const default_read_options: ReadOptions = {
     ignore_leading_dot: true,
     ignore_files: [".gitignore"],
     ignore_dirs: [".git"],
-    concurrent_threads: 10
+    concurrent_threads: 10,
+    check_binary_files: false
 }
 
 export type ReportOptions = {
@@ -42,6 +45,11 @@ const default_report_options: ReportOptions = {
 
 export async function checkFile(filePromise: Promise<string>, filePath:string): Promise<ProfanityResult> {
     const report_options = default_report_options
+    const read_options = default_read_options
+
+    if (!read_options.check_binary_files && isBinaryFileSync(filePath)) {
+        return {isProfane: false, file: filePath}
+    }
 
     // console.debug(`checking ${filePath}`)
     const fileConts = await filePromise
@@ -119,7 +127,7 @@ function parse_gitignore(gitignorePath:string, options: ReadOptions): ReadOption
 export function checkDir(dir = ".") {
     let read_options = default_read_options
     let report_options = default_report_options
-    
+
     const gitignorePath = path.join(dir, ".gitignore")
     read_options = parse_gitignore(gitignorePath, read_options)
 
