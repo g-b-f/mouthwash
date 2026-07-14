@@ -1,60 +1,93 @@
-import { containsProfanity } from "better-profane-words";
-import { Dirent, readdirSync, readFileSync } from "node:fs";
+import { containsProfanity, type Category, type Intensity, type FilterOptions } from "better-profane-words";
+import { readdirSync, readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path"
 import pLimit from 'p-limit';
 
-const CONCURRENT_FILEREADS = 30
+type ProfanityFinding = {
+    line: string
+    lineNum: number
+}
 
-type ProfanityResult = {
+export type ProfanityResult = {
     isProfane: boolean
     file: string
+    lines?: ProfanityFinding[]
 }
 
-type Options = {
-    ignore_leading_dot: boolean,
-    ignore_files: string[],
-    ignore_dirs: string[],
-    concurrent_file_reads: number
+export type ReadOptions = {
+    ignore_leading_dot: boolean
+    ignore_files: string[]
+    ignore_dirs: string[]
+    concurrent_threads: number
 }
 
-const default_options: Options = {
+export const default_read_options: ReadOptions = {
     ignore_leading_dot: true,
     ignore_files: [".gitignore"],
     ignore_dirs: [".git"],
-    concurrent_file_reads: 10
+    concurrent_threads: 10
+}
+
+export type ReportOptions = {
+    min_intensity: Intensity
+    display_profanity: boolean
+    categories?: Category[]
+}
+
+const default_report_options: ReportOptions = {
+    min_intensity: 2,
+    display_profanity: true
 }
 
 export async function checkFile(filePromise: Promise<string>, filePath:string): Promise<ProfanityResult> {
-    console.debug(`checking ${filePath}`)
-    const fileConts = await filePromise;
-    const profane = containsProfanity(fileConts)
+    const report_options = default_report_options
+
+    // console.debug(`checking ${filePath}`)
+    const fileConts = await filePromise
+
+    const profanity_options:FilterOptions  = {
+        minIntensity: report_options.min_intensity,
+        categories: report_options.categories
+    }
+    const profane = containsProfanity(fileConts, profanity_options)
+    if (report_options.display_profanity){
+        let lineNum = 0
+        let profaneLines: ProfanityFinding[] = []
+        for (const line of fileConts.split(/\r?\n/)) {
+            lineNum++
+            if (containsProfanity(line, profanity_options)){
+                profaneLines.push({line, lineNum})
+            }
+        }
+        return {isProfane: profane, file: filePath, lines: profaneLines}
+    }
     return {isProfane: profane, file: filePath}
 }
 
-function walk(directory: string, options:Options): string[] {
+function walk(directory: string, options:ReadOptions): string[] {
     const results: string[] = [];
     const dirents = readdirSync(directory, { withFileTypes: true });
     for (const dirent of dirents) {
         if (options.ignore_leading_dot && dirent.name.startsWith('.')) continue;
         
-        const resolved = path.resolve(directory, dirent.name);
+        const resolvedPath = path.resolve(directory, dirent.name);
         if (dirent.isDirectory()) {
             if (options.ignore_dirs.includes(dirent.name)) continue;
-            results.push(...walk(resolved, options));
+            results.push(...walk(resolvedPath, options));
         }
         else if (dirent.isFile()) {
             if (options.ignore_files.includes(dirent.name)) continue;
-            results.push(resolved);
+            results.push(resolvedPath);
         }
     }
     return results;
 }
 
 // TODO: parse globbing etc properly
-function parse_gitignore(gitignorePath:string, options: Options): Options{
+function parse_gitignore(gitignorePath:string, options: ReadOptions): ReadOptions{
     try {
-        const gitignore = readFileSync(gitignorePath, 'utf8')
+        const gitignore = readFileSync(gitignorePath, "utf8")
     
         const entries = gitignore.split(/\r?\n/)
             .map(l => l.trim())
@@ -84,26 +117,33 @@ function parse_gitignore(gitignorePath:string, options: Options): Options{
 
 }
 export function checkDir(dir = ".") {
-    let walk_options = default_options
+    let read_options = default_read_options
+    let report_options = default_report_options
+    
     const gitignorePath = path.join(dir, ".gitignore")
-    walk_options = parse_gitignore(gitignorePath, walk_options)
-    const files = walk(dir, walk_options);
+    read_options = parse_gitignore(gitignorePath, read_options)
 
+    const files = walk(dir, read_options);
     const tasks = files.map(filePath => {
         const fileContsPromise = readFile(filePath, "utf-8")
         return () => checkFile(fileContsPromise, filePath)
     })
 
-    const limit = pLimit(CONCURRENT_FILEREADS);
+    const limit = pLimit(read_options.concurrent_threads);
     const limitedTasks = tasks.map(task => limit(task));
 
     Promise.all(limitedTasks).then(results => {
-        const profaneFiles = results.filter(result => result.isProfane);
+        const profaneFiles = results.filter(result => result.isProfane)
         if (profaneFiles.length > 0) {
-            console.log("Profanity found in the following files:");
+            console.log("Profanity found in the following files:")
             profaneFiles.forEach(result => {
-                console.log(result.file);
-            });
+                console.log(result.file)
+                if (report_options.display_profanity) {
+                    result.lines?.forEach(lineInfo => {
+                        console.log(`  L${lineInfo.lineNum}: ${lineInfo.line}`)
+                    })
+                }
+            })
         }
         else {
             console.log("No profanity found")
