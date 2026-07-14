@@ -1,0 +1,30 @@
+{
+  "name": "professionaliser",
+  "version": "0.0.1",
+  "description": "Searches a directory, reporting on any profanity or unprofessional words",
+  "license": "GPL-3.0-or-later",
+  "author": "",
+  "type": "module",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "words.json",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "profanity",
+    "profane",
+    "filter",
+    "words",
+    "classification",
+    "moderation",
+    "content-filter"
+  ],
+  "dependencies": {
+    "better-profane-words": "^1.0.7"
+  }
+}
