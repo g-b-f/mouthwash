@@ -4,15 +4,26 @@ import { readFile } from "node:fs/promises";
 import path from "node:path"
 import pLimit from 'p-limit';
 
-const CONCURRENT_PROMISES = 1
+const CONCURRENT_FILEREADS = 30
 
 type ProfanityResult = {
     isProfane: boolean
     file: string
 }
 
-// const ignore_files = [".gitignore", "cli.ts", "index.ts"]
-// const ignore_dirs = [".git"]
+type Options = {
+    ignore_leading_dot: boolean,
+    ignore_files: string[],
+    ignore_dirs: string[],
+    concurrent_file_reads: number
+}
+
+const default_options: Options = {
+    ignore_leading_dot: true,
+    ignore_files: [".gitignore"],
+    ignore_dirs: [".git"],
+    concurrent_file_reads: 10
+}
 
 export async function checkFile(filePromise: Promise<string>, filePath:string): Promise<ProfanityResult> {
     console.debug(`checking ${filePath}`)
@@ -21,19 +32,7 @@ export async function checkFile(filePromise: Promise<string>, filePath:string): 
     return {isProfane: profane, file: filePath}
 }
 
-type WalkOptions = {
-    ignore_leading_dot: boolean,
-    ignore_files: string[],
-    ignore_dirs: string[]
-}
-
-const default_walk_options: WalkOptions = {
-    ignore_leading_dot: true,
-    ignore_files: [".gitignore"],
-    ignore_dirs: [".git"]
-}
-
-function walk(directory: string, options:WalkOptions): string[] {
+function walk(directory: string, options:Options): string[] {
     const results: string[] = [];
     const dirents = readdirSync(directory, { withFileTypes: true });
     for (const dirent of dirents) {
@@ -51,8 +50,43 @@ function walk(directory: string, options:WalkOptions): string[] {
     }
     return results;
 }
-export default function checkDir(dir = ".") {
-    let walk_options = default_walk_options
+
+// TODO: parse globbing etc properly
+function parse_gitignore(gitignorePath:string, options: Options): Options{
+    try {
+        const gitignore = readFileSync(gitignorePath, 'utf8')
+    
+        const entries = gitignore.split(/\r?\n/)
+            .map(l => l.trim())
+            .filter(l => l && !l.startsWith('#'))
+        
+        const filesSet = new Set(options.ignore_files)
+        const dirsSet = new Set(options.ignore_dirs)
+        for (const e of entries) {
+            if (e.endsWith('/')) {
+                dirsSet.add(e.replace(/\/+$/, ''))
+            } else {
+                if (e.includes('/')) {
+                    filesSet.add(path.basename(e))
+                } else {
+                    filesSet.add(e)
+                }
+            }
+        }
+        options.ignore_files = Array.from(filesSet)
+        options.ignore_dirs = Array.from(dirsSet)
+
+    } catch (err) {
+        // .gitignore not found, or unreadable
+        // TODO: add logging for each case
+    }
+    return options
+
+}
+export function checkDir(dir = ".") {
+    let walk_options = default_options
+    const gitignorePath = path.join(dir, ".gitignore")
+    walk_options = parse_gitignore(gitignorePath, walk_options)
     const files = walk(dir, walk_options);
 
     const tasks = files.map(filePath => {
@@ -60,7 +94,7 @@ export default function checkDir(dir = ".") {
         return () => checkFile(fileContsPromise, filePath)
     })
 
-    const limit = pLimit(CONCURRENT_PROMISES);
+    const limit = pLimit(CONCURRENT_FILEREADS);
     const limitedTasks = tasks.map(task => limit(task));
 
     Promise.all(limitedTasks).then(results => {
