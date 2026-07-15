@@ -1,4 +1,4 @@
-import { Category, Intensity } from "better-profane-words"
+import { type Category, type Intensity } from "better-profane-words"
 
 export type ProfanityFinding = {
     line: string
