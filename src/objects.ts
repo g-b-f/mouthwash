@@ -23,7 +23,7 @@ export const default_read_options: ReadOptions = {
     ignore_leading_dot: true,
     ignore_files: [".gitignore"],
     ignore_dirs: [".git"],
-    concurrent_threads: 10,
+    concurrent_threads: 100,
     check_binary_files: false
 }
 

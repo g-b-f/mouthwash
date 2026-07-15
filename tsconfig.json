@@ -1,5 +1,8 @@
 {
     "compilerOptions":{
-        "types": ["node"]
-}
+        "types": ["node"],
+        "esModuleInterop":true,
+        "outDir": "dist/",
+        "declaration": true
+    }
 }

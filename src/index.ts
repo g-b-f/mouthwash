@@ -11,7 +11,7 @@ import {
     type ProfanityResult,
     type ReadOptions,
     type ReportOptions
-} from "./objects.ts";
+} from "./objects";
 
 
 export async function checkFile(
@@ -106,7 +106,7 @@ export function checkDir(
     ){
     read_options ??= default_read_options
     report_options ??= default_report_options
-    // console.log(`checking dir: ${dir}`)
+    console.log(`checking dir: ${dir}`)
 
     const gitignorePath = path.join(dir, ".gitignore")
     read_options = parse_gitignore(gitignorePath, read_options)
@@ -128,7 +128,7 @@ export function checkDir(
                 console.log(result.file)
                 if (report_options.display_profanity) {
                     result.lines?.forEach(lineInfo => {
-                        console.log(`  L${lineInfo.lineNum}: ${lineInfo.line}`)
+                        console.log(`L${lineInfo.lineNum}: ${lineInfo.line.trim()}`)
                     })
                 }
             })

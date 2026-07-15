@@ -1,13 +1,13 @@
 {
-  "name": "professionaliser",
-  "version": "0.0.1",
+  "name": "mouthwash",
+  "version": "0.0.2",
   "description": "Searches a directory, reporting on any profanity or unprofessional words",
   "license": "GPL-3.0-or-later",
   "author": "",
   "type": "module",
   "main": "src/index.ts",
-  "exports": "./src/index.ts",
   "bin": "bin/cli.ts",
+  "files": ["dist/*.js"],
   "scripts": {
     "test": "node test.ts",
     "cli": "node bin/cli.ts"
