@@ -4,12 +4,24 @@ import { readFile } from "node:fs/promises";
 import path from "node:path"
 import pLimit from 'p-limit';
 import { isBinaryFileSync } from 'isbinaryfile';
-import { default_read_options, default_report_options, ProfanityFinding, ProfanityResult, ReadOptions } from "./objects";
+import {
+    default_read_options, 
+    default_report_options,
+    ProfanityFinding,
+    ProfanityResult,
+    ReadOptions,
+    ReportOptions
+} from "./objects";
 
 
-export async function checkFile(filePromise: Promise<string>, filePath:string): Promise<ProfanityResult> {
-    const report_options = default_report_options
-    const read_options = default_read_options
+export async function checkFile(
+    filePromise: Promise<string>,
+    filePath:string,
+    read_options?: ReadOptions,
+    report_options?:ReportOptions
+    ): Promise<ProfanityResult> {
+    read_options ??= default_read_options
+    report_options ??= default_report_options
 
     if (!read_options.check_binary_files && isBinaryFileSync(filePath)) {
         return {isProfane: false, file: filePath}
@@ -18,7 +30,7 @@ export async function checkFile(filePromise: Promise<string>, filePath:string): 
     // console.debug(`checking ${filePath}`)
     const fileConts = await filePromise
 
-    const profanity_options:FilterOptions  = {
+    const profanity_options: FilterOptions  = {
         minIntensity: report_options.min_intensity,
         categories: report_options.categories
     }
@@ -60,7 +72,6 @@ function walk(directory: string, options: ReadOptions): string[] {
 function parse_gitignore(gitignorePath:string, options: ReadOptions): ReadOptions{
     try {
         const gitignore = readFileSync(gitignorePath, "utf8")
-    
         const entries = gitignore.split(/\r?\n/)
             .map(l => l.trim())
             .filter(l => l && !l.startsWith('#'))
@@ -88,9 +99,13 @@ function parse_gitignore(gitignorePath:string, options: ReadOptions): ReadOption
     return options
 
 }
-export function checkDir(dir = ".") {
-    let read_options = default_read_options
-    let report_options = default_report_options
+export function checkDir(
+    dir = ".",
+    read_options?: ReadOptions,
+    report_options?:ReportOptions
+    ){
+    read_options ??= default_read_options
+    report_options ??= default_report_options
 
     const gitignorePath = path.join(dir, ".gitignore")
     read_options = parse_gitignore(gitignorePath, read_options)
