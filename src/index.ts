@@ -1,47 +1,11 @@
-import { containsProfanity, type Category, type Intensity, type FilterOptions } from "better-profane-words";
+import { containsProfanity, type FilterOptions } from "better-profane-words";
 import { readdirSync, readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path"
 import pLimit from 'p-limit';
 import { isBinaryFileSync } from 'isbinaryfile';
+import { default_read_options, default_report_options, ProfanityFinding, ProfanityResult, ReadOptions } from "./objects";
 
-type ProfanityFinding = {
-    line: string
-    lineNum: number
-}
-
-export type ProfanityResult = {
-    isProfane: boolean
-    file: string
-    lines?: ProfanityFinding[]
-}
-
-export type ReadOptions = {
-    ignore_leading_dot: boolean
-    ignore_files: string[]
-    ignore_dirs: string[]
-    concurrent_threads: number
-    check_binary_files: boolean
-}
-
-export const default_read_options: ReadOptions = {
-    ignore_leading_dot: true,
-    ignore_files: [".gitignore"],
-    ignore_dirs: [".git"],
-    concurrent_threads: 10,
-    check_binary_files: false
-}
-
-export type ReportOptions = {
-    min_intensity: Intensity
-    display_profanity: boolean
-    categories?: Category[]
-}
-
-const default_report_options: ReportOptions = {
-    min_intensity: 2,
-    display_profanity: true
-}
 
 export async function checkFile(filePromise: Promise<string>, filePath:string): Promise<ProfanityResult> {
     const report_options = default_report_options
@@ -73,7 +37,7 @@ export async function checkFile(filePromise: Promise<string>, filePath:string): 
     return {isProfane: profane, file: filePath}
 }
 
-function walk(directory: string, options:ReadOptions): string[] {
+function walk(directory: string, options: ReadOptions): string[] {
     const results: string[] = [];
     const dirents = readdirSync(directory, { withFileTypes: true });
     for (const dirent of dirents) {
