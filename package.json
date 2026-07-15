@@ -8,11 +8,6 @@
   "main": "src/index.ts",
   "exports": "./src/index.ts",
   "bin": "bin/cli.ts",
-  "files": [
-    "src/index.ts",
-    "bin/cli.ts",
-    "README.md"
-  ],
   "scripts": {
     "test": "node test.ts",
     "cli": "node bin/cli.ts"
@@ -29,9 +24,11 @@
   "dependencies": {
     "better-profane-words": "^1.0.7",
     "isbinaryfile": "^6.0.0",
+    "minimist": "^1.2.8",
     "p-limit": "^7.3.0"
   },
   "devDependencies": {
+    "@types/minimist": "^1.2.5",
     "@types/node": "^26.1.1"
   }
 }
