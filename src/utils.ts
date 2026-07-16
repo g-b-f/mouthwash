@@ -6,7 +6,8 @@ export class Logger {
         trace: 0,
         debug: 1,
         info: 2,
-        error: 3,
+        warn: 3,
+        error: 4,
     }
     static readonly MAX_VERBOSITY = Logger.log_levels.error
     static readonly MIN_VERBOSITY = Logger.log_levels.trace
@@ -19,7 +20,7 @@ export class Logger {
 
     public trace(text: any){
         if (this.verbosity >= Logger.log_levels.trace){
-            console.warn(this.prefix, text)
+            console.debug(this.prefix, text)
         }
     }
     public debug(text: any){
@@ -30,6 +31,11 @@ export class Logger {
     public log(text: any){
         if (this.verbosity >= Logger.log_levels.info){
             console.log(this.prefix, text)
+        }
+    }
+    public warn(text: any){
+        if (this.verbosity >= Logger.log_levels.warn){
+            console.warn(this.prefix, text)
         }
     }
     public error(text: any){
