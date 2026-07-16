@@ -3,6 +3,7 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "fs"
 
+const DEBUG =  false
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 type PackageJson = {
@@ -13,8 +14,9 @@ type PackageJson = {
   browser?: string;
   types?: string;
   typings?: string;
+  bin?: string,
   exports?: Record<string, unknown> | string;
-  scripts?: Record<string, string>;
+  scripts: Record<string, string>;
   devDependencies?: Record<string, string>;
   [key: string]: unknown;
 }
@@ -22,16 +24,19 @@ type PackageJson = {
 const pkgPath = path.join(__dirname, "../package.json");
 const pkg: PackageJson = JSON.parse(readFileSync(pkgPath, "utf-8"));
 
+function debug_log(text:string, prefix=""){if (DEBUG){console.debug(prefix, text)}}
+
 function check_version(){
   const tagVersion = process.env.RELEASE_VERSION || process.env.GITHUB_REF_NAME
   if (tagVersion) {
     const cleanVersion = tagVersion.replace(/^v/, "")
     if (pkg.version == cleanVersion){
-      console.log(`got version ${cleanVersion}`)
+      console.log(`got tag version ${cleanVersion}`)
+      debug_log(`package version is ${pkg.version}`)
     }
     else {
       throw new Error(
-        `package.json version (${pkg.version}) does not match tag version (${cleanVersion})`
+        `package version (${pkg.version}) does not match tag version (${cleanVersion})`
       )
     }
   }
@@ -40,31 +45,44 @@ function check_version(){
   }
 }
 
-function update_exports_recursively(exportsObj: Record<string, unknown>){
-    for (const key in exportsObj) {
-      if (typeof exportsObj[key] === "string") {
-        exportsObj[key] = (exportsObj[key] as string).replace(/^(?:\.\/)?dist\//, "./");
-      } else if (typeof exportsObj[key] === "object" && exportsObj[key] !== null) {
-        update_exports_recursively(exportsObj[key] as Record<string, unknown>);
+function update_recursively(pkg_obj: Record<string, unknown>, recursion_level=1){
+    const indent = "    ".repeat(recursion_level)
+    for (const key in pkg_obj) {
+      debug_log(`looking at ${key}: ${pkg_obj[key]}`, indent)
+      if (typeof pkg_obj[key] === "string") {
+        const replacement = (pkg_obj[key] as string).replace("dist/", "./")
+        pkg_obj[key] = replacement
+        debug_log(`replacing with ${replacement}`, indent)
+      }
+      else if (typeof pkg_obj[key] === "object" && pkg_obj[key] !== null) {
+        debug_log("type is object, recursing", indent)
+        update_recursively(pkg_obj[key] as Record<string, unknown>, recursion_level+1);
+      }
+      else {
+        debug_log(`skipping as type '${typeof pkg_obj[key]}' is neither object nor string`, indent)
       }
     }
 }
 
 function update_package_json(){
-  const fieldsToUpdate: (keyof PackageJson)[] = ["main", "module", "browser", "types", "typings"];
-  fieldsToUpdate.forEach((field) => {
-    if (typeof pkg[field] === "string") {
-      pkg[field] = (pkg[field] as string).replace(/^(?:\.\/)?dist\//, "./");
+  delete pkg.scripts.build
+  delete pkg.scripts.test
+  
+  for (const [key, value] of Object.entries(pkg)){
+    debug_log(`looking at ${key}: ${value}`)
+    if (typeof value === "string") {
+      const replacement = (value as string).replace("dist/", "./")
+      debug_log(`replacing with ${replacement}`)
+      pkg[key] = replacement
     }
-  })
-
-  if (pkg.exports && typeof pkg.exports === "object") {  
-    update_exports_recursively(pkg.exports as Record<string, unknown>);
+    else if (typeof value === "object"){
+      debug_log("type is object, updating recursively")
+      update_recursively(value as Record<string, unknown>);
+    }
+    else {
+        debug_log(`skipping as type '${typeof value}' is neither object nor string`)
+    }
   }
-
-  delete pkg.scripts?.build
-  delete pkg.files
-
 }
 
 function move_files_to_dist(){
