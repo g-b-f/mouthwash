@@ -31,6 +31,7 @@ export type ReportOptions = {
     min_intensity: Intensity
     display_profanity: boolean
     categories?: Category[]
+    verbosity?: number
 }
 
 export const default_report_options: ReportOptions = {
