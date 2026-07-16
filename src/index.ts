@@ -12,7 +12,10 @@ import {
     type ReadOptions,
     type ReportOptions
 } from "./objects.js";
+import { Logger } from "./utils.js";
 
+const PROFANITY_FOUND = true
+const PROFANITY_NOT_FOUND = false
 
 export async function checkFile(
     filePromise: Promise<string>,
@@ -22,12 +25,14 @@ export async function checkFile(
     ): Promise<ProfanityResult> {
     read_options ??= default_read_options
     report_options ??= default_report_options
+    const logger = new Logger(report_options.verbosity)
 
     if (!read_options.check_binary_files && isBinaryFileSync(filePath)) {
+        logger.debug(`${filePath} is binary, skipping`)
         return {isProfane: false, file: filePath}
     }
 
-    // console.debug(`checking ${filePath}`)
+    logger.debug(`checking ${filePath}`)
     const fileConts = await filePromise
 
     const profanity_options: FilterOptions  = {
@@ -103,10 +108,12 @@ export function checkDir(
     dir = ".",
     read_options?: ReadOptions,
     report_options?:ReportOptions
-    ){
+    ): boolean {
     read_options ??= default_read_options
     report_options ??= default_report_options
-    console.log(`checking dir: ${dir}`)
+
+    const logger = new Logger(report_options.verbosity)
+    logger.log(`checking dir: ${dir}`)
 
     const gitignorePath = path.join(dir, ".gitignore")
     read_options = parse_gitignore(gitignorePath, read_options)
@@ -123,7 +130,7 @@ export function checkDir(
     Promise.all(limitedTasks).then(results => {
         const profaneFiles = results.filter(result => result.isProfane)
         if (profaneFiles.length > 0) {
-            console.log("Profanity found in the following files:")
+            logger.log("Profanity found in the following files:")
             profaneFiles.forEach(result => {
                 console.log(result.file)
                 if (report_options.display_profanity) {
@@ -132,9 +139,9 @@ export function checkDir(
                     })
                 }
             })
-        }
-        else {
-            console.log("No profanity found")
+            return PROFANITY_FOUND
         }
     })
+    logger.log("No profanity found")
+    return PROFANITY_NOT_FOUND
 }
