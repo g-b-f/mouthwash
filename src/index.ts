@@ -74,15 +74,20 @@ function walk(directory: string, options: ReadOptions): string[] {
 }
 
 // TODO: parse globbing etc properly
-function parse_gitignore(gitignorePath:string, options: ReadOptions): ReadOptions{
+function parse_gitignore(
+    gitignorePath:string,
+    read_options: ReadOptions,
+    report_options: ReportOptions
+    ): ReadOptions{
+    const logger = new Logger(report_options.verbosity)
     try {
         const gitignore = readFileSync(gitignorePath, "utf8")
         const entries = gitignore.split(/\r?\n/)
             .map(l => l.trim())
             .filter(l => l && !l.startsWith('#'))
         
-        const filesSet = new Set(options.ignore_files)
-        const dirsSet = new Set(options.ignore_dirs)
+        const filesSet = new Set(read_options.ignore_files)
+        const dirsSet = new Set(read_options.ignore_dirs)
         for (const e of entries) {
             if (e.endsWith('/')) {
                 dirsSet.add(e.replace(/\/+$/, ''))
@@ -94,14 +99,13 @@ function parse_gitignore(gitignorePath:string, options: ReadOptions): ReadOption
                 }
             }
         }
-        options.ignore_files = Array.from(filesSet)
-        options.ignore_dirs = Array.from(dirsSet)
+        read_options.ignore_files = Array.from(filesSet)
+        read_options.ignore_dirs = Array.from(dirsSet)
 
-    } catch (err) {
-        // .gitignore not found, or unreadable
-        // TODO: add logging for each case
+    } catch (error) {
+        logger.debug(".gitignore not found, or unreadable")
     }
-    return options
+    return read_options
 
 }
 export function checkDir(
@@ -116,7 +120,7 @@ export function checkDir(
     logger.log(`checking dir: ${dir}`)
 
     const gitignorePath = path.join(dir, ".gitignore")
-    read_options = parse_gitignore(gitignorePath, read_options)
+    read_options = parse_gitignore(gitignorePath, read_options, report_options)
 
     const files = walk(dir, read_options);
     const tasks = files.map(filePath => {
