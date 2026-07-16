@@ -50,7 +50,7 @@ function update_recursively(pkg_obj: Record<string, unknown>, recursion_level=1)
     for (const key in pkg_obj) {
       debug_log(`looking at ${key}: ${pkg_obj[key]}`, indent)
       if (typeof pkg_obj[key] === "string") {
-        const replacement = (pkg_obj[key] as string).replace("dist/", "./")
+        const replacement = (pkg_obj[key] as string).replace("dist/", "")
         pkg_obj[key] = replacement
         debug_log(`replacing with ${replacement}`, indent)
       }
@@ -72,7 +72,7 @@ function update_package_json(){
   for (const [key, value] of Object.entries(pkg)){
     debug_log(`looking at ${key}: ${value}`)
     if (typeof value === "string") {
-      const replacement = (value as string).replace("dist/", "./")
+      const replacement = (value as string).replace("dist/", "")
       debug_log(`replacing with ${replacement}`)
       pkg[key] = replacement
     }
