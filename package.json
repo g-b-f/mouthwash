@@ -32,12 +32,11 @@
   "dependencies": {
     "better-profane-words": "^1.0.7",
     "isbinaryfile": "^6.0.0",
-    "minimist": "^1.2.8",
     "p-limit": "^7.3.0",
-    "ts-node": "^10.9.2"
+    "yargs": "^18.0.0"
   },
   "devDependencies": {
-    "@types/minimist": "^1.2.5",
-    "@types/node": "^26.1.1"
+    "@types/node": "^26.1.1",
+    "@types/yargs": "^17.0.35"
   }
 }
