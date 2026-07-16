@@ -66,6 +66,7 @@ function update_recursively(pkg_obj: Record<string, unknown>, recursion_level=1)
 
 function update_package_json(){
   delete pkg.scripts.build
+  delete pkg.scripts.release
   delete pkg.scripts.test
   
   for (const [key, value] of Object.entries(pkg)){
