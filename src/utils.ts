@@ -18,22 +18,22 @@ export class Logger {
     }
 
     public trace(text: any){
-        if (this.verbosity <= Logger.log_levels.trace){
+        if (this.verbosity >= Logger.log_levels.trace){
             console.warn(this.prefix, text)
         }
     }
     public debug(text: any){
-        if (this.verbosity <= Logger.log_levels.debug){
+        if (this.verbosity >= Logger.log_levels.debug){
             console.debug(this.prefix, text)
         }
     }
     public log(text: any){
-        if (this.verbosity <= Logger.log_levels.info){
+        if (this.verbosity >= Logger.log_levels.info){
             console.log(this.prefix, text)
         }
     }
     public error(text: any){
-        if (this.verbosity <= Logger.log_levels.error){
+        if (this.verbosity >= Logger.log_levels.error){
             console.error(this.prefix, text)
         }
     }
