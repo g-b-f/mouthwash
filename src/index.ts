@@ -11,7 +11,7 @@ import {
     type ProfanityResult,
     type ReadOptions,
     type ReportOptions
-} from "./objects";
+} from "./objects.js";
 
 
 export async function checkFile(

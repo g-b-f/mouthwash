@@ -6,11 +6,14 @@
   "author": "",
   "type": "module",
   "main": "src/index.ts",
-  "bin": "bin/cli.ts",
-  "files": ["dist/*.js"],
+  "files": [
+    "dist/bin/*",
+    "dist/src/*"
+  ],
   "scripts": {
-    "test": "node test.ts",
-    "cli": "node bin/cli.ts"
+    "test": "node src/test.ts",
+    "cli": "ts-node bin/cli.ts",
+    "build": "tsc && node scripts/prepare_dist.ts"
   },
   "keywords": [
     "profanity",
@@ -25,7 +28,8 @@
     "better-profane-words": "^1.0.7",
     "isbinaryfile": "^6.0.0",
     "minimist": "^1.2.8",
-    "p-limit": "^7.3.0"
+    "p-limit": "^7.3.0",
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "@types/minimist": "^1.2.5",

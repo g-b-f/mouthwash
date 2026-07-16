@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { checkDir } from "../src/index"
+import { checkDir } from "../src/index.js"
 import argv from "minimist"
 
 const args = argv(process.argv.slice(2))
