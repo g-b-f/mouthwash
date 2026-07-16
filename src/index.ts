@@ -108,7 +108,7 @@ export function checkDir(
     dir = ".",
     read_options?: ReadOptions,
     report_options?:ReportOptions
-    ): boolean {
+    ): number {
     read_options ??= default_read_options
     report_options ??= default_report_options
 
@@ -139,9 +139,9 @@ export function checkDir(
                     })
                 }
             })
-            return PROFANITY_FOUND
+            return profaneFiles.length
         }
     })
     logger.log("No profanity found")
-    return PROFANITY_NOT_FOUND
+    return 0
 }
