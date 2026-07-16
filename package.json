@@ -5,14 +5,18 @@
   "license": "GPL-3.0-or-later",
   "author": "",
   "type": "module",
-  "main": "src/index.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "files": [
     "dist/bin/*",
     "dist/src/*"
   ],
+  "bin": {
+    "mouthwash": "dist/bin/cli.js"
+  },
   "scripts": {
-    "test": "node src/test.ts",
-    "cli": "ts-node bin/cli.ts",
+    "test": "node dist/src/test.js",
+    "cli": "node dist/bin/cli.js",
     "build": "tsc && node scripts/prepare_dist.ts"
   },
   "keywords": [
