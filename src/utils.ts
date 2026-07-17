@@ -3,46 +3,45 @@ export class Logger {
     public prefix: any
 
     static readonly log_levels: Record<string, number> = {
-        trace: 0,
-        debug: 1,
-        info: 2,
-        warn: 3,
-        error: 4,
+        trace: 5,
+        debug: 4,
+        info: 3,
+        warn: 2,
+        error: 1,
+        off: 0
     }
-    static readonly MAX_VERBOSITY = Logger.log_levels.error
-    static readonly MIN_VERBOSITY = Logger.log_levels.trace
+    static readonly MAX_VERBOSITY = Logger.log_levels.trace
+    static readonly MIN_VERBOSITY = Logger.log_levels.off
     static readonly DEFAULT_VERBOSITY = Logger.log_levels.info
 
-    public constructor(verbosity: number | undefined, prefix=""){
+    public constructor(verbosity: number | undefined, prefix:any = "") {
         this.verbosity = verbosity ?? Logger.DEFAULT_VERBOSITY
         this.prefix = prefix
     }
 
-    public trace(text: any){
-        if (this.verbosity >= Logger.log_levels.trace){
-            console.debug(this.prefix, text)
+    public trace(...args: unknown[]) {
+        if (this.verbosity >= Logger.log_levels.trace) {
+            console.debug(this.prefix, ...args)
         }
     }
-    public debug(text: any){
-        if (this.verbosity >= Logger.log_levels.debug){
-            console.debug(this.prefix, text)
+    public debug(...args: unknown[]) {
+        if (this.verbosity >= Logger.log_levels.debug) {
+            console.debug(this.prefix, ...args)
         }
     }
-    public log(text: any){
-        if (this.verbosity >= Logger.log_levels.info){
-            console.log(this.prefix, text)
+    public info(...args: unknown[]) {
+        if (this.verbosity >= Logger.log_levels.info) {
+            console.info(this.prefix, ...args)
         }
     }
-    public warn(text: any){
-        if (this.verbosity >= Logger.log_levels.warn){
-            console.warn(this.prefix, text)
+    public warn(...args: unknown[]) {
+        if (this.verbosity >= Logger.log_levels.warn) {
+            console.warn(this.prefix, ...args)
         }
     }
-    public error(text: any){
-        if (this.verbosity >= Logger.log_levels.error){
-            console.error(this.prefix, text)
+    public error(...args: unknown[]) {
+        if (this.verbosity >= Logger.log_levels.error) {
+            console.error(this.prefix, ...args)
         }
     }
-
 }
-    
