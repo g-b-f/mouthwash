@@ -2,7 +2,7 @@ import path from "path";
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "fs"
-import { Logger } from "../src/utils"
+import { Logger } from "../src/utils.ts"
 
 const LOG_LEVEL =  Logger.log_levels.info
 const __dirname = dirname(fileURLToPath(import.meta.url))

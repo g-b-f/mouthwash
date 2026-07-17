@@ -1,6 +1,6 @@
 {
   "name": "mouthwash",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Searches a directory, reporting on any profanity or unprofessional words",
   "license": "GPL-3.0-or-later",
   "author": "",

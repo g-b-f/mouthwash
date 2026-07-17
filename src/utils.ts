@@ -1,8 +1,8 @@
 export class Logger {
     public verbosity: number
-    public prefix: any
+    public prefix: unknown
 
-    static readonly log_levels: Record<string, number> = {
+    static readonly log_levels = {
         trace: 5,
         debug: 4,
         info: 3,
@@ -14,7 +14,7 @@ export class Logger {
     static readonly MIN_VERBOSITY = Logger.log_levels.off
     static readonly DEFAULT_VERBOSITY = Logger.log_levels.info
 
-    public constructor(verbosity: number | undefined, prefix:any = "") {
+    public constructor(verbosity: number | undefined, prefix: unknown = "") {
         this.verbosity = verbosity ?? Logger.DEFAULT_VERBOSITY
         this.prefix = prefix
     }
