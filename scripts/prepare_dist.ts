@@ -2,9 +2,10 @@ import path from "path";
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "fs"
+import { Logger } from "../src/utils"
 
-const DEBUG =  false
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const LOG_LEVEL =  Logger.log_levels.info
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 type PackageJson = {
   name: string;
@@ -21,18 +22,18 @@ type PackageJson = {
   [key: string]: unknown;
 }
 
+const logger = new Logger(LOG_LEVEL)
+
 const pkgPath = path.join(__dirname, "../package.json");
 const pkg: PackageJson = JSON.parse(readFileSync(pkgPath, "utf-8"));
-
-function debug_log(text:string, prefix=""){if (DEBUG){console.debug(prefix, text)}}
 
 function check_version(){
   const tagVersion = process.env.RELEASE_VERSION || process.env.GITHUB_REF_NAME
   if (tagVersion) {
     const cleanVersion = tagVersion.replace(/^v/, "")
     if (pkg.version == cleanVersion){
-      console.log(`got tag version ${cleanVersion}`)
-      debug_log(`package version is ${pkg.version}`)
+      logger.info(`got tag version ${cleanVersion}`)
+      logger.debug(`package version is ${pkg.version}`)
     }
     else {
       throw new Error(
@@ -48,18 +49,18 @@ function check_version(){
 function update_recursively(pkg_obj: Record<string, unknown>, recursion_level=1){
     const indent = "    ".repeat(recursion_level)
     for (const key in pkg_obj) {
-      debug_log(`looking at ${key}: ${pkg_obj[key]}`, indent)
+      logger.debug(`looking at ${key}: ${pkg_obj[key]}`, indent)
       if (typeof pkg_obj[key] === "string") {
         const replacement = (pkg_obj[key] as string).replace("dist/", "")
         pkg_obj[key] = replacement
-        debug_log(`replacing with ${replacement}`, indent)
+        logger.debug(`replacing with ${replacement}`, indent)
       }
       else if (typeof pkg_obj[key] === "object" && pkg_obj[key] !== null) {
-        debug_log("type is object, recursing", indent)
+        logger.debug("type is object, recursing", indent)
         update_recursively(pkg_obj[key] as Record<string, unknown>, recursion_level+1);
       }
       else {
-        debug_log(`skipping as type '${typeof pkg_obj[key]}' is neither object nor string`, indent)
+        logger.debug(`skipping as type '${typeof pkg_obj[key]}' is neither object nor string`, indent)
       }
     }
 }
@@ -70,18 +71,18 @@ function update_package_json(){
   delete pkg.scripts.test
   
   for (const [key, value] of Object.entries(pkg)){
-    debug_log(`looking at ${key}: ${value}`)
+    logger.debug(`looking at ${key}: ${value}`)
     if (typeof value === "string") {
       const replacement = (value as string).replace("dist/", "")
-      debug_log(`replacing with ${replacement}`)
+      logger.debug(`replacing with ${replacement}`)
       pkg[key] = replacement
     }
     else if (typeof value === "object"){
-      debug_log("type is object, updating recursively")
+      logger.debug("type is object, updating recursively")
       update_recursively(value as Record<string, unknown>);
     }
     else {
-        debug_log(`skipping as type '${typeof value}' is neither object nor string`)
+        logger.debug(`skipping as type '${typeof value}' is neither object nor string`)
     }
   }
 }
@@ -107,11 +108,11 @@ function move_files_to_dist(){
 }
 
 if (process.env.GITHUB_ACTIONS){
-  console.debug("checking version")
+  logger.info("checking version")
   check_version()
 }
-console.debug("updating dist/package.json")
+logger.info("updating dist/package.json")
 update_package_json()
-console.debug("moving files to dist")
+logger.info("moving files to dist")
 move_files_to_dist()
-console.log("Successfully prepared dist/ for publication");
+logger.info("Successfully prepared dist/ for publication")

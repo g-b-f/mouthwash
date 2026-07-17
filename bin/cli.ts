@@ -43,7 +43,7 @@ else if (verbosity < Logger.MIN_VERBOSITY){
 }
 
 const logger = new Logger(verbosity)
-logger.debug(args)
+logger.trace(args)
 
 const categories = Array.isArray(args.categories) ? args.categories.map(String) as Category[] : undefined
 const ignore_files = args?.ignore_files ? args.ignore_files.map(String) : undefined
@@ -63,6 +63,8 @@ const read_options: ReadOptions = {
     concurrent_threads: args.threads ?? default_read_options.concurrent_threads,
     check_binary_files: args.binary ?? default_read_options.check_binary_files
 }
+
+logger.trace(report_options, "\n", read_options)
 
 const dirs = args._.length > 0 ? args._ : ["."]
 

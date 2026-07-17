@@ -26,6 +26,7 @@ export async function checkFile(
     read_options ??= default_read_options
     report_options ??= default_report_options
     const logger = new Logger(report_options.verbosity)
+    logger.trace("checkFile with args\n", read_options, "\n", report_options)
 
     if (!read_options.check_binary_files && isBinaryFileSync(filePath)) {
         logger.debug(`${filePath} is binary, skipping`)
@@ -80,6 +81,7 @@ function parse_gitignore(
     report_options: ReportOptions
     ): ReadOptions{
     const logger = new Logger(report_options.verbosity)
+    logger.trace("parse_gitignore with args\n", read_options, "\n", report_options)
     try {
         const gitignore = readFileSync(gitignorePath, "utf8")
         const entries = gitignore.split(/\r?\n/)
@@ -117,7 +119,8 @@ export function checkDir(
     report_options ??= default_report_options
 
     const logger = new Logger(report_options.verbosity)
-    logger.log(`checking dir: ${dir}`)
+    logger.trace("checkDir with args\n", read_options, "\n", report_options)
+    logger.info(`checking dir: ${dir}`)
 
     const gitignorePath = path.join(dir, ".gitignore")
     read_options = parse_gitignore(gitignorePath, read_options, report_options)
@@ -134,18 +137,18 @@ export function checkDir(
     Promise.all(limitedTasks).then(results => {
         const profaneFiles = results.filter(result => result.isProfane)
         if (profaneFiles.length > 0) {
-            logger.log("Profanity found in the following files:")
+            logger.info("Profanity found in the following files:")
             profaneFiles.forEach(result => {
-                console.log(result.file)
+                logger.info(result.file)
                 if (report_options.display_profanity) {
                     result.lines?.forEach(lineInfo => {
-                        console.log(`L${lineInfo.lineNum}: ${lineInfo.line.trim()}`)
+                        logger.info(`L${lineInfo.lineNum}: ${lineInfo.line.trim()}`)
                     })
                 }
             })
             return profaneFiles.length
         }
     })
-    logger.log("No profanity found")
+    logger.info("No profanity found")
     return 0
 }
