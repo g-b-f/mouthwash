@@ -14,9 +14,15 @@ import {
 } from "./objects.js";
 import { Logger } from "./utils.js";
 
-const PROFANITY_FOUND = true
-const PROFANITY_NOT_FOUND = false
-
+/**
+ * 
+ * @param filePromise Promise that resolves to the contents of the file
+ * @param filePath the path to the file
+ * @param read_options options for reading and searching
+ * @param report_options options for reporting to the user
+ * @returns a Promise<ProfanityResult> object containing whether the file contains profanity,
+ *  the file path, and optionally the lines containing profanity
+ */
 export async function checkFile(
     filePromise: Promise<string>,
     filePath:string,
@@ -110,10 +116,17 @@ function parse_gitignore(
     return read_options
 
 }
+/**
+ * Checks a directory for files containing profanity
+ * @param dir The directory to search 
+ * @param read_options options for reading and searching
+ * @param report_options options for reporting to the user
+ * @returns the number of files containing profanity
+ */
 export function checkDir(
     dir = ".",
     read_options?: ReadOptions,
-    report_options?:ReportOptions
+    report_options?: ReportOptions
     ): number {
     read_options ??= default_read_options
     report_options ??= default_report_options
