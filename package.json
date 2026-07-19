@@ -1,21 +1,23 @@
 {
   "name": "mouthwash",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Searches a directory, reporting on any profanity or unprofessional words",
   "license": "GPL-3.0-or-later",
   "author": "",
   "type": "module",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
+  "sideEffects": false,
   "files": [
     "dist/bin/*",
-    "dist/src/*"
+    "dist/src/*",
+    "dist/test/*"
   ],
   "bin": {
     "mouthwash": "dist/bin/cli.js"
   },
   "scripts": {
-    "test": "node dist/src/test.js",
+    "test": "node dist/tests/test.js",
     "cli": "node dist/bin/cli.js",
     "build": "tsc && node scripts/prepare_dist.ts",
     "release": "npm run build && npm publish ./dist"
