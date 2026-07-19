@@ -27,8 +27,9 @@ type ArgsType = {
     _: ArgsArray
 }
 
-export function get_args(): ArgsType{
-    const args = yargs(process.argv.slice(2)).options({
+export function get_args(cli_args?: string[]): ArgsType{
+    cli_args ??= process.argv.slice(2)
+    const args = yargs(cli_args).options({
         verbose: {type: "count", default: Logger.DEFAULT_VERBOSITY, alias: "v", describe: "increase verbosity"},
         quiet: {type: "count", default: 0, alias: "q", describe: "reduce verbosity"},
         intensity: {type: "number", default: 2, alias: "i", describe: "intensity of words"},
