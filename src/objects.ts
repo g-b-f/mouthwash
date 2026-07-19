@@ -38,3 +38,8 @@ export const default_report_options: ReportOptions = {
     min_intensity: 2,
     display_profanity: true
 }
+
+export type CombinedOptions = {
+    read_options: ReadOptions
+    report_options: ReportOptions
+}
