@@ -4,8 +4,8 @@ import { capture_logs } from "./lib.js"
 
 export function test_default_verbosity (){
     const defaultLogger = new Logger(undefined, "default")
-    assert.equal(defaultLogger.verbosity, Logger.DEFAULT_VERBOSITY)
-    assert.equal(defaultLogger.prefix, "default")
+    assert.strictEqual(defaultLogger.verbosity, Logger.DEFAULT_VERBOSITY)
+    assert.strictEqual(defaultLogger.prefix, "default")
 
     const callsAtWarn = capture_logs(() => {
         const logger = new Logger(Logger.log_levels.warn, "warn-test")
@@ -16,9 +16,9 @@ export function test_default_verbosity (){
         logger.error("error should be visible")
     })
 
-    assert.deepEqual(callsAtWarn.map((entry) => entry.method), ["warn", "error"])
-    assert.deepEqual(callsAtWarn[0].args, ["warn-test", "warn should be visible"])
-    assert.deepEqual(callsAtWarn[1].args, ["warn-test", "error should be visible"])
+    assert.deepStrictEqual(callsAtWarn.map((entry) => entry.method), ["warn", "error"])
+    assert.deepStrictEqual(callsAtWarn[0].args, ["warn-test", "warn should be visible"])
+    assert.deepStrictEqual(callsAtWarn[1].args, ["warn-test", "error should be visible"])
 }
 
 export function test_trace (){
@@ -31,12 +31,12 @@ export function test_trace (){
         logger.error("error should be visible")
     })
 
-    assert.deepEqual(callsAtTrace.map((entry) => entry.method), ["debug", "debug", "info", "warn", "error"])
-    assert.deepEqual(callsAtTrace[0].args, ["trace-test", "trace should be visible"])
-    assert.deepEqual(callsAtTrace[1].args, ["trace-test", "debug should be visible"])
-    assert.deepEqual(callsAtTrace[2].args, ["trace-test", "info should be visible"])
-    assert.deepEqual(callsAtTrace[3].args, ["trace-test", "warn should be visible"])
-    assert.deepEqual(callsAtTrace[4].args, ["trace-test", "error should be visible"])
+    assert.deepStrictEqual(callsAtTrace.map((entry) => entry.method), ["debug", "debug", "info", "warn", "error"])
+    assert.deepStrictEqual(callsAtTrace[0].args, ["trace-test", "trace should be visible"])
+    assert.deepStrictEqual(callsAtTrace[1].args, ["trace-test", "debug should be visible"])
+    assert.deepStrictEqual(callsAtTrace[2].args, ["trace-test", "info should be visible"])
+    assert.deepStrictEqual(callsAtTrace[3].args, ["trace-test", "warn should be visible"])
+    assert.deepStrictEqual(callsAtTrace[4].args, ["trace-test", "error should be visible"])
 }
 
 export function test_off(){
@@ -49,5 +49,5 @@ export function test_off(){
         logger.error("error should be ignored");
     });
 
-    assert.equal(callsAtOff.length, 0);
+    assert.strictEqual(callsAtOff.length, 0);
 }
