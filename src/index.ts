@@ -147,6 +147,7 @@ export function checkDir(
     const limit = pLimit(read_options.concurrent_threads);
     const limitedTasks = tasks.map(task => limit(task));
 
+    let files_num = 0
     Promise.all(limitedTasks).then(results => {
         const profaneFiles = results.filter(result => result.isProfane)
         if (profaneFiles.length > 0) {
@@ -159,9 +160,8 @@ export function checkDir(
                     })
                 }
             })
-            return profaneFiles.length
+            files_num = profaneFiles.length
         }
     })
-    logger.info("No profanity found")
-    return 0
+    return files_num
 }

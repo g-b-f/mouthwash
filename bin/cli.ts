@@ -93,9 +93,11 @@ const options = parse_args(args)
 const logger = new Logger(options.report_options.verbosity)
 logger.trace(options.report_options, "\n", options.read_options)
 
+let files_num = 0
 for (const dir of dirs) {
     logger.debug(`checking ${dir}`)
-    checkDir(String(dir), options.read_options, options.report_options)
+    files_num += checkDir(String(dir), options.read_options, options.report_options)
 }
-
- 
+if (files_num === 0){
+    logger.info("No profanity found")
+}
