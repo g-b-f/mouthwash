@@ -44,8 +44,22 @@ export function test_checkDir(){
         writeFileSync(join(dir, "good_file_1.txt"), file_conts_good)
         writeFileSync(join(dir, "bad_file_2.md"), file_conts_bad)
         writeFileSync(join(dir, "good_file_2.md"), file_conts_good)
-        checkDir(dir).then(result =>{
+        checkDir(dir).then(result => {
             assert.strictEqual(result, 2)
+        })
+    })
+}
+
+
+export function test_parse_gitignore(){
+    temp_dir((dir) => {
+        writeFileSync(join(dir, ".gitignore"), "bad_file_1.txt\nbad_file_3.md\n")
+        checkDir(dir).then(result => {
+            writeFileSync(join(dir, "bad_file_1.txt"), file_conts_bad)
+            writeFileSync(join(dir, "good_file_1.txt"), file_conts_good)
+            writeFileSync(join(dir, "bad_file_2.md"), file_conts_bad)
+            writeFileSync(join(dir, "good_file_2.md"), file_conts_good)
+            assert.strictEqual(result, 1)
         })
     })
 }
