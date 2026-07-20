@@ -123,11 +123,11 @@ function parse_gitignore(
  * @param report_options options for reporting to the user
  * @returns the number of files containing profanity
  */
-export function checkDir(
-    dir = ".",
+export async function checkDir(
+    dir:string,
     read_options?: ReadOptions,
     report_options?: ReportOptions
-    ): number {
+    ): Promise<number> {
     read_options ??= default_read_options
     report_options ??= default_report_options
 
@@ -147,8 +147,8 @@ export function checkDir(
     const limit = pLimit(read_options.concurrent_threads);
     const limitedTasks = tasks.map(task => limit(task));
 
-    let files_num = 0
-    Promise.all(limitedTasks).then(results => {
+    var files_num = 0
+    const all_promises = Promise.all(limitedTasks).then(results => {
         const profaneFiles = results.filter(result => result.isProfane)
         if (profaneFiles.length > 0) {
             logger.info("Profanity found in the following files:")
@@ -163,5 +163,6 @@ export function checkDir(
             files_num = profaneFiles.length
         }
     })
+    await all_promises
     return files_num
 }

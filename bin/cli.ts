@@ -86,18 +86,32 @@ export function parse_args(args: ArgsType): CombinedOptions{
     return {read_options, report_options}    
 }
 
-const args = get_args()
-const dirs = args._.length > 0 ? args._ : ["."]
+export function check_multiple_dirs(dirs:string[], options: CombinedOptions){
+    logger.trace("check_multiple_dirs with dirs:", dirs)
 
+    const tasks = dirs.map(dir => {
+        return checkDir(dir, options.read_options, options.report_options)
+    })
+
+    Promise.all(tasks).then(results => {
+        const files_num = results.reduce((acc, val) => acc + val, 0)
+    
+        if (files_num > 0){
+            logger.info(`Profanity found in ${files_num} files`)
+            process.exit(1)
+        }
+        else {
+            logger.info("No profanity found")
+            process.exit(0)
+        }
+    })
+}
+
+const args = get_args()
 const options = parse_args(args)
+const dirs = args._.length > 0 ? args._.map(String) : ["."]
+
 const logger = new Logger(options.report_options.verbosity)
 logger.trace(options.report_options, "\n", options.read_options)
 
-let files_num = 0
-for (const dir of dirs) {
-    logger.debug(`checking ${dir}`)
-    files_num += checkDir(String(dir), options.read_options, options.report_options)
-}
-if (files_num === 0){
-    logger.info("No profanity found")
-}
+check_multiple_dirs(dirs, options)
